@@ -1,209 +1,112 @@
-# installation-steps-
-[4:33 PM] Mohamed Bukhris
-version: "3"
- 
-services:
+# Project Name
 
-  app:
+Brief description of the project.
 
-    container_name: django
+## Table of Contents
+- [Overview](#overview)
+- [Prerequisites](#prerequisites)
+- [Installation](#installation)
+- [Configuration](#configuration)
+  - [Django (app) Service](#django-app-service)
+  - [Celery Service](#celery-service)
+  - [PostgreSQL (db) Service](#postgresql-db-service)
+  - [Redis Service](#redis-service)
+  - [Angular Service](#angular-service)
+- [Networks](#networks)
 
-    hostname: django_host
+## Overview
 
-    image: ubiaitools/onpremise-be:gpu-v1.7.2
+This repository contains the Docker Compose configuration for deploying the UbiaiTools OnPremise application with GPU support. The setup includes services for the Django backend (app), Celery for background tasks, PostgreSQL as the database (db), Redis for caching, and an Angular frontend.
 
-    command: bash /start
+## Prerequisites
 
-    environment:
+Before you start the installation process, make sure you have the following software installed on your machine:
 
-      - MY_host=0.0.0.0:8000
+- Docker
+- Docker Compose
+- NVIDIA driver
+- NVIDIA Docker runtime
 
-      - DB_HOST=db
+Additionally, ensure that your DockerHub account is added to the list of collaborators for the required images.
 
-      - DB_NAME=annotation
+## Installation
 
-      - DB_USER=postgres
+1. Clone the repository:
 
-      - DB_PASS=ubiai
+    ```bash
+    git clone <repository-url>
+    cd <repository-directory>
+    ```
 
-      - DJANGO_SETTINGS_MODULE=Annotation.production
+2. Run Docker Compose:
 
-      - CLEAR_MIGRATIONS=no
+    ```bash
+    docker-compose up
+    ```
 
-      - RUN_MAKE_MIGRATIONS=yes
+3. Activate Installation:
 
-      - RUN_MIGRATION=no
+    Follow the activation steps provided by the UbiaiTools OnPremise application.
 
-      - TRAIN_CONTAINER_NETWORK=appnet
+## Configuration
 
-      - ENABLE_GPU=yes
+### Django (app) Service
 
-      - TRAIN_IMAGE=ubiaitools/onpremise-train:v2.4
+The Django service is the main backend for the UbiaiTools OnPremise application. It utilizes the `ubiaitools/onpremise-be:gpu-v1.7.2` image.
 
-      - USE_DOCKER=yes
+- **Environment Variables:**
+  - `MY_host`: Host address and port for Django (default: 0.0.0.0:8000)
+  - ...
 
-      - TESSDATA_PREFIX=/usr/local/share/tessdata/
+- **Ports:**
+  - 8000:8000 (Django app)
+  - 8001:8001 (Additional port)
 
-      - HOST_HOSTNAME=app
+- **Volumes:**
+  - ...
 
-      - HOST_DATASET=$HOME/ubiai_local/backup/Media/dataset
+### Celery Service
 
-      - HOST_MODEL_STORE=$HOME/ubiai_local/backup/Media/model_store
+The Celery service is responsible for handling background tasks using the `ubiaitools/onpremise-be:gpu-v1.7.2` image.
 
-      - HOST_TRAIN_MODEL=$HOME/ubiai_local/backup/Media/models
+- **Environment Variables:**
+  - ...
 
-    ports:
+- **Volumes:**
+  - ...
 
-      - "8000:8000"
+- **Depends On:**
+  - db
+  - redis
 
-      - "8001:8001"
+### PostgreSQL (db) Service
 
-    depends_on:
+The PostgreSQL service uses the official `postgres:latest` image.
 
-      - db
+- **Environment Variables:**
+  - ...
 
-      - redis
+- **Volumes:**
+  - ...
 
-    volumes:
+- **Ports:**
+  - 5432:5432
 
-      - ./ubiai_local/backup/Media:/app/Media:rw
+### Redis Service
 
-      - ./ubiai_local/backup/Media/models:/app/Media/models:rw
+The Redis service uses the official `redis:alpine` image.
 
-      - ./ubiai_local/backup/Media/dataset:/app/Media/dataset:rw
+### Angular Service
 
-      - ./ubiai_local/backup/Media/model_store:/app/Media/model_store:rw
+The Angular service is the frontend of the UbiaiTools OnPremise application, using the `ubiaitools/onpremise-fe:gpu-v1.10` image.
 
-      - ./ubiai_local/backup:/app/backup
+- **Ports:**
+  - 80:80
 
-      - ./ubiai_local/ub/sercret:/app/static/static_server
+## Networks
 
-      - /var/run/docker.sock:/var/run/docker.sock
+The Docker Compose setup uses an external network named `appnet`.
 
-      - ./ubiai_local/mediafiles/credentials:/app/mediafiles/credentials
+---
 
-      - ./ubiai_local/mediafiles:/app/mediafiles
- 
-  celery:
-
-    container_name: celery
-
-    restart: always
-
-    image: ubiaitools/onpremise-be:gpu-v1.7.2
-
-    command: celery worker -A Annotation --loglevel=info
-
-    volumes:
-
-      - ./ubiai_local/backup:/app/backup
-
-      - ./ubiai_local/backup/Media:/app/Media:rw
-
-      - ./ubiai_local/backup/Media/models:/app/Media/models:rw
-
-      - ./ubiai_local/backup/Media/dataset:/app/Media/dataset:rw
-
-      - ./ubiai_local/backup/Media/model_store:/app/Media/model_store:rw
-
-      - ./ubiai_local/ub/sercret:/app/static/static_server
-
-      - /var/run/docker.sock:/var/run/docker.sock
-
-      - ./ubiai_local/mediafiles/credentials:/app/mediafiles/credentials
-
-      - ./ubiai_local/mediafiles:/app/mediafiles
-
-    environment:
-
-      - DB_HOST=db
-
-      - DB_NAME=annotation
-
-      - DB_USER=postgres
-
-      - DB_PASS=ubiai
-
-      - RUN_MIGRATION=no
-
-      - DJANGO_SETTINGS_MODULE=Annotation.production
-
-      - TRAIN_CONTAINER_NETWORK=appnet
-
-      - TRAIN_IMAGE=ubiaitools/onpremise-train:v2.4
-
-      - USE_DOCKER=yes
-
-      - ENABLE_GPU=yes
-
-      - TESSDATA_PREFIX=/usr/local/share/tessdata/
-
-      - HOST_HOSTNAME=app
-
-      - HOST_DATASET=$HOME/ubiai_local/backup/Media/dataset
-
-      - HOST_MODEL_STORE=$HOME/ubiai_local/backup/Media/model_store
-
-      - HOST_TRAIN_MODEL=$HOME/ubiai_local/backup/Media/models
-
-    depends_on:
-
-      - db
-
-      - redis
- 
-  db:
-
-    container_name: db
-
-    restart: always
-
-    image: postgres:latest
-
-    environment:
-
-      - POSTGRES_DB=annotation
-
-      - POSTGRES_USER=postgres
-
-      - POSTGRES_PASSWORD=ubiai
-
-    volumes:
-
-      - ./ubiai_local/backup/db_data:/var/lib/postgresql/data
-
-    ports:
-
-      - 5432:5432
- 
-  redis:
-
-    container_name: redis
-
-    image: redis:alpine
- 
-  angular:
-
-    container_name: angular
-
-    image: ubiaitools/onpremise-fe:gpu-v1.10
-
-    ports:
-
-      - "80:80"
- 
-networks:
-
-  default:
-
-    name: appnet
-
-    external: true
-
- like 1
-[4:35 PM] Mohamed Bukhris
-install docker, docker-compose, nvidia driver and nvidia docker runtime
-add client to list of Dockerhub collaborators
-docker-compose up
-activate installation
- 
+Feel free to adjust the configuration as needed for your specific environment and requirements.
