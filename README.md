@@ -11,8 +11,7 @@ Before initiating the installation process, ensure the following software is ins
 
 
 ```bash
-# Ensure your environment is up to date
-sudo apt update && sudo apt upgrade
+#  dont Ensure your environment is up to date every thing do in script
  python setup_env.py
 ```
 
