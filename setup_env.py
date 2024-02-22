@@ -39,12 +39,3 @@ run_command('sudo chmod +x /usr/local/bin/docker-compose')
 return_code, output, error = run_command('docker-compose --version')
 print(output.strip() if return_code == 0 else error.strip())
 
-# Add the NVIDIA repository
-run_command('sudo add-apt-repository -y ppa:graphics-drivers/ppa')
-run_command('sudo apt-get update')
-
-# Install the NVIDIA driver
-run_command('sudo ubuntu-drivers autoinstall')
-
-# Install the CUDA Toolkit (adjust version number as needed)
-run_command('sudo apt-get install -y nvidia-cuda-toolkit')
